@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Analyzer</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f6fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: #ffffff;
+            width: 520px;
+            padding: 42px;
+            border-radius: 22px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.4rem;
+            color: #6c63ff;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #777;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            border: 2px dashed #6c63ff;
+            border-radius: 16px;
+            padding: 36px 20px;
+            margin-bottom: 22px;
+        }
+
+        .upload-icon { font-size: 2.2rem; margin-bottom: 10px; }
+        .upload-text { font-size: 0.95rem; color: #555; margin-bottom: 14px; }
+
+        .choose-btn {
+            background: #6c63ff;
+            color: white;
+            padding: 10px 26px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .support-text { margin-top: 12px; font-size: 0.8rem; color: #999; }
+        input[type="file"] { display: none; }
+
+        .preview-img {
+            margin-top: 15px;
+            max-width: 180px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .analyze-btn {
+            width: 100%;
+            background: linear-gradient(90deg, #6c63ff, #7f7afc);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        .result {
+            margin-top: 32px;
+            padding: 26px;
+            background: #f7f8ff;
+            border-radius: 18px;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            letter-spacing: 1.2px;
+            color: #6c63ff;
+            margin-bottom: 10px;
+        }
+
+        .personality {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: #333;
+            letter-spacing: 3px;
+        }
+
+        .note {
+            font-size: 0.75rem;
+            color: #777;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>Personality Analyzer</h1>
+    <p class="subtitle">Discover your MBTI type through facial recognition</p>
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="upload-box">
+            <div id="uploadContent">
+                <div class="upload-icon">📷</div>
+                <div class="upload-text">Click to upload your photo</div>
+
+                <div class="choose-btn" onclick="document.getElementById('fileInput').click()">
+                    Choose File
+                </div>
+
+                <div class="support-text">Supports JPG, JPEG, PNG</div>
+            </div>
+
+            <!-- instant preview -->
+            <img id="previewImage" class="preview-img" style="display:none;">
+            <input type="file" id="fileInput" name="image" accept=".jpg,.jpeg,.png" required>
+        </div>
+
+        <button type="submit" class="analyze-btn">Analyze Personality</button>
+    </form>
+
+    {% if personality and personality != "Waiting for image..." %}
+    <div class="result">
+        <div class="result-label">YOUR PERSONALITY TYPE</div>
+        <div class="personality">{{ personality }}</div>
+
+        {% if image %}
+            <!-- 🔥 SERVER SIDE IMAGE (AFTER ANALYZE) -->
+            <img src="{{ url_for('static', filename='uploads/' + image) }}" class="preview-img">
+        {% endif %}
+
+        <div class="note">
+            This result is rule-based and for educational purposes only.
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    const fileInput = document.getElementById("fileInput");
+    const previewImage = document.getElementById("previewImage");
+    const uploadContent = document.getElementById("uploadContent");
+
+    fileInput.addEventListener("change", function () {
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImage.src = e.target.result;
+            previewImage.style.display = "block";
+            uploadContent.style.display = "none";
+        };
+        reader.readAsDataURL(file);
+    });
+</script>
+
+</body>
+</html>
