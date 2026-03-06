@@ -14,7 +14,7 @@ def allowed_file(filename):
 @app.route("/", methods=["GET", "POST"])
 def index():
     personality = "Waiting for image..."
-    image = None   # 🔥 THIS IS IMPORTANT
+    image = None   #  THIS IS IMPORTANT
 
     if request.method == "POST":
         file = request.files.get("image")
