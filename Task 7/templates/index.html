@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Skycast — Weather</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky:    #0a0f2c;
+      --mid:    #0d1b4b;
+      --card:   rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.10);
+      --accent: #4fc3f7;
+      --gold:   #ffd54f;
+      --text:   #e8f4fd;
+      --muted:  rgba(232,244,253,0.55);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--sky);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px 80px;
+      overflow-x: hidden;
+    }
+
+    /* animated stars background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 20%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 10%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 20% 80%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 65% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 45% 55%, rgba(79,195,247,0.4) 0%, transparent 100%),
+        radial-gradient(600px 400px at 20% 0%, rgba(13,27,75,0.8) 0%, transparent 70%),
+        radial-gradient(800px 600px at 80% 100%, rgba(10,15,44,0.9) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page { position: relative; z-index: 1; width: 100%; max-width: 560px; }
+
+    /* Header */
+    header { text-align: center; margin-bottom: 44px; animation: fadeDown 0.7s ease both; }
+    header .logo { font-family: 'Syne', sans-serif; font-size: 2.8rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: -1px; }
+    header p { color: var(--muted); font-size: 0.92rem; margin-top: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* Search */
+    .search-wrap { display: flex; gap: 10px; margin-bottom: 36px; animation: fadeUp 0.7s 0.1s ease both; }
+    .search-wrap input {
+      flex: 1; padding: 14px 20px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; outline: none; transition: border 0.2s, box-shadow 0.2s;
+      backdrop-filter: blur(8px);
+    }
+    .search-wrap input::placeholder { color: var(--muted); }
+    .search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,195,247,0.15); }
+    .search-wrap button {
+      padding: 14px 24px; background: linear-gradient(135deg, #1976d2, var(--accent));
+      border: none; border-radius: 14px; color: #fff; font-family: 'Syne', sans-serif;
+      font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: transform 0.15s, box-shadow 0.2s;
+      letter-spacing: 0.03em;
+    }
+    .search-wrap button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(79,195,247,0.35); }
+    .search-wrap button:active { transform: translateY(0); }
+
+    /* Error */
+    .error-box {
+      background: rgba(239,83,80,0.12); border: 1px solid rgba(239,83,80,0.3);
+      border-radius: 14px; padding: 16px 22px; margin-bottom: 24px;
+      color: #ef9a9a; font-size: 0.95rem; animation: fadeUp 0.4s ease both;
+    }
+
+    /* Weather Card */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 24px; padding: 36px 32px;
+      backdrop-filter: blur(16px);
+      animation: fadeUp 0.6s 0.05s ease both;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+    }
+
+    .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+    .city-name { font-family: 'Syne', sans-serif; font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+    .city-country { color: var(--muted); font-size: 0.88rem; margin-top: 4px; }
+    .weather-icon { font-size: 4rem; line-height: 1; filter: drop-shadow(0 0 16px rgba(255,213,79,0.5)); }
+
+    .temp-row { display: flex; align-items: flex-end; gap: 14px; margin-bottom: 8px; }
+    .temp-main { font-family: 'Syne', sans-serif; font-size: 5rem; font-weight: 800;
+      background: linear-gradient(135deg, #fff 40%, var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+    .temp-alt { color: var(--muted); font-size: 1.3rem; padding-bottom: 10px; }
+    .description { color: var(--accent); font-size: 1.05rem; font-weight: 500; margin-bottom: 32px; text-transform: capitalize; }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin-bottom: 28px; }
+
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .stat {
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 18px;
+      transition: background 0.2s;
+    }
+    .stat:hover { background: rgba(255,255,255,0.08); }
+    .stat-label { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+    .stat-value { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 600; color: var(--text); }
+    .stat-unit { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+
+    .feels { margin-bottom: 28px; }
+    .feels span { color: var(--muted); font-size: 0.9rem; }
+    .feels strong { color: var(--accent); }
+
+    /* Footer */
+    footer { text-align: center; margin-top: 40px; color: var(--muted); font-size: 0.8rem; animation: fadeUp 0.7s 0.3s ease both; }
+    footer span { color: var(--accent); }
+
+    /* Animations */
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:none; } }
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(20px);  } to { opacity:1; transform:none; } }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="logo">⛅ Skycast</div>
+    <p>Real-time weather anywhere on Earth</p>
+  </header>
+
+  <form class="search-wrap" method="POST">
+    <input type="text" name="city" placeholder="Enter a city name…" value="{{ city_input }}" autofocus autocomplete="off"/>
+    <button type="submit">Search</button>
+  </form>
+
+  {% if weather %}
+    {% if weather.error %}
+      <div class="error-box">
+        ⚠️ Could not find weather for <strong>"{{ city_input }}"</strong>. Please check the city name and try again.
+      </div>
+    {% else %}
+      <div class="card">
+        <div class="card-top">
+          <div>
+            <div class="city-name">{{ weather.city }}</div>
+            <div class="city-country">{{ weather.country }}</div>
+          </div>
+          <div class="weather-icon">{{ icon }}</div>
+        </div>
+
+        <div class="temp-row">
+          <div class="temp-main">{{ weather.temp_c }}°C</div>
+          <div class="temp-alt">{{ weather.temp_f }}°F</div>
+        </div>
+        <div class="description">{{ weather.description }}</div>
+
+        <div class="feels">
+          <span>Feels like </span>
+          <strong>{{ weather.feels_like_c }}°C</strong>
+        </div>
+
+        <hr class="divider"/>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">💧 Humidity</div>
+            <div class="stat-value">{{ weather.humidity }}<span class="stat-unit"> %</span></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">💨 Wind Speed</div>
+            <div class="stat-value">{{ weather.wind_speed }}<span class="stat-unit"> km/h {{ weather.wind_dir }}</span></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">👁️ Visibility</div>
+            <div class="stat-value">{{ weather.visibility }}<span class="stat-unit"> km</span></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">🌡️ Pressure</div>
+            <div class="stat-value">{{ weather.pressure }}<span class="stat-unit"> hPa</span></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">☀️ UV Index</div>
+            <div class="stat-value">{{ weather.uv_index }}</div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <footer>
+    Data powered by <span>wttr.in</span> · Built with Flask &amp; Python
+  </footer>
+
+</div>
+</body>
+</html>
