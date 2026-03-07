@@ -54,7 +54,6 @@ def get_weather_icon(description):
     else:
         return '🌤️'
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     weather = None
@@ -67,7 +66,6 @@ def index():
             if weather and not weather.get('error'):
                 icon = get_weather_icon(weather['description'])
     return render_template('index.html', weather=weather, icon=icon, city_input=city_input)
-
 
 if __name__ == '__main__':
     app.run(debug=True)
