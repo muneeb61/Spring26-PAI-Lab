@@ -33,7 +33,7 @@ def clean_text(text):
         text = ''
     return text
 
-# ── Load Dataset ──────────────────────────────────────────────────────────────
+# ── Load Dataset ───────────────────────────────────────────────────────────
 def load_dataset():
     csv_files = glob.glob(DATASET_PATH, recursive=True)
     if not csv_files:
@@ -128,6 +128,7 @@ def search():
         })
 
     return jsonify({'results': results})
+
 
 if __name__ == '__main__':
     app.run(debug=False, port=5000)
