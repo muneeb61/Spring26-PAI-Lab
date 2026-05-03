@@ -13,9 +13,8 @@ nltk.download('punkt_tab', quiet=True)
 nltk.download('stopwords', quiet=True)
 nltk.download('wordnet', quiet=True)
 
-# ─────────────────────────────────────────────
 # Knowledge Base: intents with patterns + responses
-# ─────────────────────────────────────────────
+
 INTENTS = [
     {
         "tag": "greeting",
@@ -156,9 +155,9 @@ INTENTS = [
     }
 ]
 
-# ─────────────────────────────────────────────
 # NLP Engine
-# ─────────────────────────────────────────────
+
+
 class MentalHealthBot:
     def __init__(self):
         self.lemmatizer = WordNetLemmatizer()
@@ -182,7 +181,7 @@ class MentalHealthBot:
         self.intents = INTENTS
         self.vectorizer = TfidfVectorizer(tokenizer=self._preprocess, lowercase=True)
 
-        # Build corpus: map each pattern to its intent tag
+
         self.corpus = []
         self.tags = []
         for intent in self.intents:

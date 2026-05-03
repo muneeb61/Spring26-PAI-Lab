@@ -9,13 +9,12 @@ from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
 
-# ── Config ────────────────────────────────────────────────────────────────────
-DATASET_PATH  = './data/**/*.csv'       # folder where you cloned the repo CSVs
+DATASET_PATH  = './data/**/*.csv'       
 EMBEDDINGS_FILE = './hadith_embeddings.npy'
 FAISS_INDEX_FILE = './faiss_index.index'
 MODEL_NAME = 'sentence-transformers/all-MiniLM-L6-v2'
 
-# ── Column names from LK Hadith Corpus ───────────────────────────────────────
+# ── Column names from LK Hadith Corpus
 COL_NAMES = [
     'Chapter_Number', 'Chapter_English', 'Chapter_Arabic',
     'Section_Number', 'Section_English', 'Section_Arabic',
@@ -24,7 +23,7 @@ COL_NAMES = [
     'English_Grade', 'Arabic_Grade'
 ]
 
-# ── Text Cleaning ─────────────────────────────────────────────────────────────
+# ── Text Cleaning 
 def clean_text(text):
     if isinstance(text, str):
         text = re.sub(r'[^A-Za-z\s]', '', text)
@@ -33,7 +32,7 @@ def clean_text(text):
         text = ''
     return text
 
-# ── Load Dataset ───────────────────────────────────────────────────────────
+# ── Load Dataset 
 def load_dataset():
     csv_files = glob.glob(DATASET_PATH, recursive=True)
     if not csv_files:
@@ -63,7 +62,7 @@ def load_dataset():
     print(f"✅ Dataset loaded: {len(hadith_df)} Hadiths")
     return hadith_df
 
-# ── Build or Load FAISS Index ─────────────────────────────────────────────────
+# ── Build or Load FAISS Index 
 def build_or_load_index(hadith_df, model):
     if os.path.exists(EMBEDDINGS_FILE) and os.path.exists(FAISS_INDEX_FILE):
         print("⚡ Loading saved embeddings & FAISS index...")
@@ -88,7 +87,7 @@ def build_or_load_index(hadith_df, model):
 
     return embeddings, index
 
-# ── Initialise everything on startup ─────────────────────────────────────────
+# ── Initialise everything on startup
 print("🚀 Starting Hadith Bot...")
 print("⏳ Loading MiniLM model...")
 model = SentenceTransformer(MODEL_NAME)
@@ -97,7 +96,7 @@ hadith_df = load_dataset()
 embeddings, faiss_index = build_or_load_index(hadith_df, model)
 print("✅ Ready! Open http://localhost:5000\n")
 
-# ── Flask Routes ──────────────────────────────────────────────────────────────
+# ── Flask Routes
 @app.route('/')
 def index():
     return render_template('index.html')
